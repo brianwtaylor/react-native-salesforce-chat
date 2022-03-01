@@ -15,6 +15,8 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.salesforce.android.chat.core.ChatConfiguration;
 import com.salesforce.android.chat.core.SessionStateListener;
 import com.salesforce.android.chat.core.model.AvailabilityState;
+import com.salesforce.android.chat.core.AgentAvailabilityClient;
+import com.salesforce.android.chat.core.ChatCore;
 import com.salesforce.android.chat.core.model.ChatEndReason;
 import com.salesforce.android.chat.core.model.ChatEntity;
 import com.salesforce.android.chat.core.model.ChatEntityField;
@@ -34,6 +36,7 @@ import java.util.Objects;
 
 public class RNSalesforceChatModule extends ReactContextBaseJavaModule implements SessionStateListener {
 
+	private static ChatConfiguration.Builder chatConfigurationBuilder = null;
 	private static boolean isSessionInProgress = false;
 	private static boolean isAvailable = false;
 	private static boolean requestEstimatedWaitTime = false;
@@ -149,7 +152,7 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 	@ReactMethod
 	public void configureChat(String orgId, String buttonId, String deploymentId, String liveAgentPod,
 			@Nullable String visitorName) {
-		ChatConfiguration.Builder chatConfigurationBuilder = new ChatConfiguration.Builder(orgId, buttonId, deploymentId,
+				chatConfigurationBuilder = new ChatConfiguration.Builder(orgId, buttonId, deploymentId,
 				liveAgentPod);
 
 		if (visitorName != null)
@@ -205,11 +208,10 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 	}
 
 	@ReactMethod
-	public void checkAgentAvailability(Promise promise) {
-		ChatConfiguration.Builder chatConfigurationBuilder = new ChatConfiguration.Builder(orgId, buttonId, deploymentId, liveAgentPod);
+	public void checkAgentAvailability(final Promise promise) {
 
 		// Create an agent availability client
-		AgentAvailabilityClient client = ChatCore.configureAgentAvailability(chatConfiguration, requestEstimatedWaitTime);
+		AgentAvailabilityClient client = ChatCore.configureAgentAvailability(chatConfigurationBuilder.build(), requestEstimatedWaitTime);
 	
 		client.check().onResult(new Async.ResultHandler<AvailabilityState>() {
 			@Override
