@@ -89,7 +89,8 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 	}
 
 	@ReactMethod
-	public void createPreChatData(String agentLabel, @Nullable String value, Boolean isDisplayedToAgent, @Nullable ReadableArray transcriptFields, String preChatDataKey) {
+	public void createPreChatData(String agentLabel, @Nullable String value, Boolean isDisplayedToAgent,
+			@Nullable ReadableArray transcriptFields, String preChatDataKey) {
 		ArrayList<String> tempTranscriptFields = new ArrayList<>();
 
 		if (transcriptFields != null) {
@@ -100,14 +101,16 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 		String[] receivedTranscriptFields = tempTranscriptFields.toArray(new String[0]);
 
 		if (value != null) {
-			chatUserDataMap.put(preChatDataKey, new ChatUserData(agentLabel, value, isDisplayedToAgent, receivedTranscriptFields));
+			chatUserDataMap.put(preChatDataKey,
+					new ChatUserData(agentLabel, value, isDisplayedToAgent, receivedTranscriptFields));
 		} else {
 			chatUserDataMap.put(preChatDataKey, new ChatUserData(agentLabel, isDisplayedToAgent, receivedTranscriptFields));
 		}
 	}
 
 	@ReactMethod
-	public void createEntityField(String objectFieldName, Boolean doCreate, Boolean doFind, Boolean isExactMatch, @Nullable String preChatDataKeyToMap, String entityFieldKey) {
+	public void createEntityField(String objectFieldName, Boolean doCreate, Boolean doFind, Boolean isExactMatch,
+			@Nullable String preChatDataKeyToMap, String entityFieldKey) {
 		if (chatUserDataMap.containsKey(preChatDataKeyToMap)) {
 			chatEntityFieldMap.put(entityFieldKey, new ChatEntityField.Builder()
 					.doCreate(doCreate)
@@ -118,7 +121,8 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 	}
 
 	@ReactMethod
-	public void createEntity(String objectType, @Nullable String linkToTranscriptField, Boolean showOnCreate, @Nullable ReadableArray entityFieldKeysToMap) {
+	public void createEntity(String objectType, @Nullable String linkToTranscriptField, Boolean showOnCreate,
+			@Nullable ReadableArray entityFieldKeysToMap) {
 		ChatEntity entity;
 
 		if (linkToTranscriptField != null) {
@@ -145,10 +149,13 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 	}
 
 	@ReactMethod
-	public void configureChat(String orgId, String buttonId, String deploymentId, String liveAgentPod, @Nullable String visitorName) {
-		ChatConfiguration.Builder chatConfigurationBuilder = new ChatConfiguration.Builder(orgId, buttonId, deploymentId, liveAgentPod);
+	public void configureChat(String orgId, String buttonId, String deploymentId, String liveAgentPod,
+			@Nullable String visitorName) {
+		ChatConfiguration.Builder chatConfigurationBuilder = new ChatConfiguration.Builder(orgId, buttonId, deploymentId,
+				liveAgentPod);
 
-		if (visitorName != null) chatConfigurationBuilder.visitorName(visitorName);
+		if (visitorName != null)
+			chatConfigurationBuilder.visitorName(visitorName);
 
 		ChatConfiguration chatConfiguration = chatConfigurationBuilder
 				.chatUserData(new ArrayList<>(chatUserDataMap.values()))
@@ -168,7 +175,8 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 		Runnable startChatRunnable = new Runnable() {
 			@Override
 			public void run() {
-				if (isSessionInProgress) return;
+				if (isSessionInProgress)
+					return;
 
 				if (chatUiConfiguration == null) {
 					failureCallback.invoke("error - chat not configured");
@@ -196,6 +204,42 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 		};
 
 		reactContext.runOnUiQueueThread(startChatRunnable);
+	}
+
+	@ReactMethod
+	public void isAgentOnline() {
+		ChatConfiguration.Builder chatConfigurationBuilder = new ChatConfiguration.Builder(orgId, buttonId, deploymentId, liveAgentPod);
+
+		// Create an agent availability client
+		AgentAvailabilityClient client = ChatCore.configureAgentAvailability(chatConfiguration, requestEstimatedWaitTime);
+	
+		client.check().onResult(new Async.ResultHandler<AvailabilityState>() {
+			@Override
+			public void handleResult (Async<?> async, @NonNull AvailabilityState state) {
+				switch (state.getStatus()) {
+					case AgentsAvailable: {
+						// TO DO: Handle the case where agents are available
+		
+						// Optionally, use the estimatedWaitTime to
+						// show an estimated wait time until an agent
+						// is available. This value is only valid
+						// if you request it from the
+						// configureAgentAvailability call above.
+						// Estimate is returned in seconds.
+						Integer ewt = state.getEstimatedWaitTime();
+		
+						break;
+					}
+					case NoAgentsAvailable: {
+						// TO DO: Handle the case where no agents are available
+						break;
+					}
+					case Unknown: {
+						break;
+					}
+				}
+			}
+		});
 	}
 
 	@Override
@@ -259,28 +303,27 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 				.emit(ChatSessionEnd, params);
 	}
 
-
 	@Override
 	public void checkAgentAvailability(AvailabilityState state) {
 
-			String isAvailable;
-	
+		String isAvailable;
+
 		switch (state.getStatus()) {
-				case AgentsAvailable: {
-					// TO DO: Handle the case where agents are available
-					isAvailable = true;
-	
-					// Optionally, use the estimatedWaitTime to
-					// show an estimated wait time until an agent
-					// is available. This value is only valid
-					// if you request it from the
-					// configureAgentAvailability call above.
-					// Estimate is returned in seconds.
-					Integer ewt = state.getEstimatedWaitTime();
-	
-					break;
-				}
-				case NoAgentsAvailable: {
+			case AgentsAvailable: {
+				// TO DO: Handle the case where agents are available
+				isAvailable = true;
+
+				// Optionally, use the estimatedWaitTime to
+				// show an estimated wait time until an agent
+				// is available. This value is only valid
+				// if you request it from the
+				// configureAgentAvailability call above.
+				// Estimate is returned in seconds.
+				Integer ewt = state.getEstimatedWaitTime();
+
+				break;
+			}
+			case NoAgentsAvailable: {
 				// TO DO: Handle the case where no agents are available
 				isAvailable = false;
 				break;
@@ -291,12 +334,9 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 		}
 
 		WritableMap params = Arguments.createMap();
-		params.putString("state", state);
+		params.putString("state", isAvailable);
 
 		reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
 				.emit(ChatSessionStateChanged, params);
 	}
 }
-
-
-
