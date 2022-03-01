@@ -13,6 +13,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.salesforce.android.chat.core.ChatConfiguration;
 import com.salesforce.android.chat.core.SessionStateListener;
+import com.salesforce.android.chat.core.model.AvailabilityState;
 import com.salesforce.android.chat.core.model.ChatEndReason;
 import com.salesforce.android.chat.core.model.ChatEntity;
 import com.salesforce.android.chat.core.model.ChatEntityField;
@@ -33,6 +34,8 @@ import java.util.Objects;
 public class RNSalesforceChatModule extends ReactContextBaseJavaModule implements SessionStateListener {
 
 	private static boolean isSessionInProgress = false;
+	private static boolean isAvailable = false;
+	private static boolean requestEstimatedWaitTime = false;
 	private final String ChatSessionStateChanged = "ChatSessionStateChanged";
 	private final String ChatSessionEnd = "ChatSessionEnd";
 	private final String Connecting = "Connecting";
@@ -79,6 +82,9 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 		constants.put(EndReasonNoAgentsAvailable, EndReasonNoAgentsAvailable);
 		constants.put(EndReasonTimeout, EndReasonTimeout);
 		constants.put(EndReasonSessionError, EndReasonSessionError);
+		constants.put(AgentsAvailable, AgentsAvailable);
+		constants.put(NoAgentsAvailable, NoAgentsAvailable);
+		constants.put(Unknown, Unknown);
 		return constants;
 	}
 
@@ -252,5 +258,45 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 		reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
 				.emit(ChatSessionEnd, params);
 	}
+
+
+	@Override
+	public void checkAgentAvailability(AvailabilityState state) {
+
+			String isAvailable;
+	
+		switch (state.getStatus()) {
+				case AgentsAvailable: {
+					// TO DO: Handle the case where agents are available
+					isAvailable = true;
+	
+					// Optionally, use the estimatedWaitTime to
+					// show an estimated wait time until an agent
+					// is available. This value is only valid
+					// if you request it from the
+					// configureAgentAvailability call above.
+					// Estimate is returned in seconds.
+					Integer ewt = state.getEstimatedWaitTime();
+	
+					break;
+				}
+				case NoAgentsAvailable: {
+				// TO DO: Handle the case where no agents are available
+				isAvailable = false;
+				break;
+			}
+			case Unknown: {
+				break;
+			}
+		}
+
+		WritableMap params = Arguments.createMap();
+		params.putString("state", state);
+
+		reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+				.emit(ChatSessionStateChanged, params);
+	}
 }
+
+
 
