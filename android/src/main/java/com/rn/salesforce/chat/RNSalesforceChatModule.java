@@ -83,9 +83,6 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 		constants.put(EndReasonNoAgentsAvailable, EndReasonNoAgentsAvailable);
 		constants.put(EndReasonTimeout, EndReasonTimeout);
 		constants.put(EndReasonSessionError, EndReasonSessionError);
-		constants.put(AgentsAvailable, AgentsAvailable);
-		constants.put(NoAgentsAvailable, NoAgentsAvailable);
-		constants.put(Unknown, Unknown);
 		return constants;
 	}
 
