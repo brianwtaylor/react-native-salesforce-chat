@@ -216,17 +216,16 @@ public class RNSalesforceChatModule extends ReactContextBaseJavaModule implement
 		client.check().onResult(new Async.ResultHandler<AvailabilityState>() {
 			@Override
 			public void handleResult (Async<?> async, @NonNull AvailabilityState state) {
+			
 				switch (state.getStatus()) {
 					case AgentsAvailable: {
 						promise.resolve(true);
-						break;
 					}
 					case NoAgentsAvailable: {
 						promise.resolve(false);
-						break;
 					}
 					case Unknown: {
-						break;
+						promise.resolve(false);
 					}
 				}
 			}
